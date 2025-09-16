@@ -1,6 +1,5 @@
 package com.easyshop.product.web;
 
-import com.easyshop.common.web.ApiResponseDto;
 import com.easyshop.product.domain.Product;
 import com.easyshop.product.service.ProductService;
 import com.easyshop.product.web.dto.ProductCreateDto;
@@ -21,13 +20,13 @@ public class ProductController {
     }
 
     @GetMapping("/healthz")
-    public ApiResponseDto health() {
-        return new ApiResponseDto(true, null);
+    public ResponseEntity<Void> health() {
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/readyz")
-    public ApiResponseDto ready() {
-        return new ApiResponseDto(true, null);
+    public ResponseEntity<Void> ready() {
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/api/products")
@@ -59,10 +58,11 @@ public class ProductController {
     }
 
     @PostMapping("/api/admin/products/{id}/reserve")
-    public ResponseEntity<ApiResponseDto> reserveStock(@PathVariable Long id, @RequestParam int qty) {
+    public ResponseEntity<?> reserveStock(@PathVariable Long id, @RequestParam int qty) {
         return switch (service.reserve(id, qty)) {
-            case OK -> ResponseEntity.ok(new ApiResponseDto(true, null));
-            case NOT_ENOUGH_STOCK -> ResponseEntity.status(409).body(new ApiResponseDto(false, "Not enough stock"));
+            case OK -> ResponseEntity.ok().build();
+            case NOT_ENOUGH_STOCK -> ResponseEntity.status(409)
+                    .body(org.springframework.http.ProblemDetail.forStatusAndDetail(org.springframework.http.HttpStatus.CONFLICT, "Not enough stock"));
             case NOT_FOUND -> ResponseEntity.notFound().build();
         };
     }
